@@ -18,3 +18,7 @@ script:
 branches:
   only:
     - master
+
+cache:
+  directories:
+    - /home/travis/gopath/pkg/mod/
