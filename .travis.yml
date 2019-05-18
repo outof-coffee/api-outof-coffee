@@ -7,10 +7,11 @@ env:
 go:
   - 1.12.x
 
+before_install:
+  - build/install_protoc.sh
 install: true
 
 script:
-  - go get -u ./...
   - make all
   - go test -race ./...
 
