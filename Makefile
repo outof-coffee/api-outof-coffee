@@ -9,9 +9,11 @@ proto:
 	protoc ${PROTO_INCLUDES} ${PROTO_PATH} --swagger_out=logtostderr=true:api/hambone/v1 hambone.proto
 hambone:
 	go build -o hambone hambone.go
+api/hambone/v1:
+	mkdir -p  api/hambone/v1/
 
 clean:
-	rm -rf api/v1
+	rm -rf api/hambone/v1
 	rm -rf hambone
 
-all: proto hambone
+all: api/hambone/v1 proto hambone
