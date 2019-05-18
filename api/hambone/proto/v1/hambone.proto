@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package v1;
+
+import "google/api/annotations.proto";
+
+message Hambone {
+    string name = 1;
+    string img = 2;
+    string position = 3;
+}
+
+message GetRequest {
+    string api = 1;
+}
+
+message GetResponse {
+    string api = 1;
+    repeated Hambone hambones = 2;
+}
+
+service HamboneService {
+    rpc GetHambones(GetRequest) returns (GetResponse) {
+        option (google.api.http) = {
+            get: "/v1/hambones"
+        };
+    };
+}
