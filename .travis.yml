@@ -10,6 +10,7 @@ go:
 install: true
 
 script:
+  - go get -u ./...
   - make all
   - go test -race ./...
 
