@@ -7,13 +7,11 @@ env:
 go:
   - 1.12.x
 
-before_install:
-  - build/install_protoc.sh
 install: true
 
 script:
-  - PATH=${GOPATH}/bin:${PATH} make all
   - go test -race ./...
+  - make hambone
 
 branches:
   only:
