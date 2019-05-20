@@ -138,23 +138,6 @@ func main() {
 		os.Exit(1)
 	}
 	h := New(data)
-	h.wg.Add(1)
-	defer h.wg.Done()
 	h.Start()
 	h.wg.Wait()
-	//_, err = dataFile.Seek(0,0)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	os.Exit(1)
-	//}
-	//var data2 io.Reader = dataFile
-	//b, err := ioutil.ReadAll(data2)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	os.Exit(1)
-	//}
-	//fmt.Println(string(b))
-	if err := h.checkAPI("v1"); err == nil {
-		fmt.Println("match for api v1")
-	}
 }
