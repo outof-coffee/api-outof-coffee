@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package v1;
+
+import "google/api/annotations.proto";
+
+
+message CoffeeStatus {
+    bool haveCoffee = 1;
+    int64 coffeeAmount = 2;
+}
+
+message GetCoffeeStatus {
+    int64 hasAtLeast = 1;
+}
+
+message CoffeeStatusResponse {
+    CoffeeStatus status = 1;
+}
+
+service CoffeeStatusService {
+    rpc GetStatus(GetCoffeeStatus) returns (CoffeeStatusResponse) {
+        option (google.api.http) = {
+            get: "/v1/frowns"
+        };
+    };
+}
