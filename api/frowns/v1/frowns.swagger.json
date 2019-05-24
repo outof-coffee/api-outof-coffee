@@ -1,0 +1,67 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "frowns.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/frowns": {
+      "get": {
+        "operationId": "GetStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CoffeeStatusResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hasAtLeast",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "CoffeeStatusService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "v1CoffeeStatus": {
+      "type": "object",
+      "properties": {
+        "haveCoffee": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "coffeeAmount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1CoffeeStatusResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1CoffeeStatus"
+        }
+      }
+    }
+  }
+}
