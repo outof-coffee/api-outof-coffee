@@ -4,7 +4,6 @@ package v1;
 
 import "google/api/annotations.proto";
 
-
 message CoffeeStatus {
     bool haveCoffee = 1;
     int64 coffeeAmount = 2;
