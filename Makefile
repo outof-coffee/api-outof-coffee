@@ -20,5 +20,7 @@ frownsproto: api/frowns/v1
 	protoc ${PROTO_INCLUDES} ${FROWNS_PATH} --swagger_out=logtostderr=true:api/frowns/v1 frowns.proto
 clean:
 	rm -rf api/hambone/v1
+	rm -rf api/frowns/v1
 	rm -rf hambone
+	rm -rf frowns
 all: hambone
