@@ -41,7 +41,7 @@ blocks:
           - bin/protoc --version
           - popd
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-          - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@1.9.0
-          - go get -u github.com/golang/protobuf/protoc-gen-go@v1.3.1
+          - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+          - go get -u github.com/golang/protobuf/protoc-gen-go
           - go get -u ./...
 
