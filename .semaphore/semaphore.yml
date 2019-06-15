@@ -29,7 +29,7 @@ blocks:
         commands:
           - checkout
           - sem-version go 1.12
-          - cache restore godeps-$SEMAPHORE_GIT_BRANCH-$(checksum go.mod),godeps-$SEMAPHORE_GIT_BRANCH,godeps-master
+          - pushd /; cache restore godeps-$SEMAPHORE_GIT_BRANCH-$(checksum go.mod),godeps-$SEMAPHORE_GIT_BRANCH,godeps-master ; popd
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
           - go get -u github.com/golang/protobuf/protoc-gen-go
