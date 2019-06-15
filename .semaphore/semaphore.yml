@@ -29,15 +29,14 @@ blocks:
           # Download code from Git repository. This step is mandatory if the
           # job is to work with your code.
           - checkout
-
           # Set version of Go:
           - sem-version go 1.12
-
           # Download dependencies and build the project:
           - PROTOBUF_VERSION=3.5.1
           - PROTOC_FILENAME=protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
           - pushd /home/semaphore
-          - curl https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
+          - echo ${PROTOC_FILENAME}
+          - curl -L https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
           - unzip ${PROTOC_FILENAME}
           - bin/protoc --version
           - popd
