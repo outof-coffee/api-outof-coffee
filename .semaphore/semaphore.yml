@@ -1,24 +1,9 @@
-# Use the latest stable version of Semaphore 2.0 YML syntax:
 version: v1.0
-
-# Name your pipeline. In case you connect multiple pipelines with promotions,
-# the name will help you differentiate between, for example, a CI build phase
-# and delivery phases.
 name: api.outof.coffee - a public-ish api
-
-# An agent defines the environment in which your code runs.
-# It is a combination of one of available machine types and operating
-# system images.
-# See https://docs.semaphoreci.com/article/20-machine-types
-# and https://docs.semaphoreci.com/article/32-ubuntu-1804-image
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-# Blocks are the heart of a pipeline and are executed sequentially.
-# Each block has a task that defines one or more jobs. Jobs define the
-# commands to execute.
-# See https://docs.semaphoreci.com/article/62-concepts
 blocks:
   - name: Build Protobuf APIs
     task:
@@ -42,12 +27,8 @@ blocks:
       jobs:
       - name: go get & build
         commands:
-          # Download code from Git repository. This step is mandatory if the
-          # job is to work with your code.
           - checkout
-          # Set version of Go:
           - sem-version go 1.12
-          # Download dependencies and build the project:
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
           - go get -u github.com/golang/protobuf/protoc-gen-go
@@ -60,7 +41,7 @@ blocks:
       epilogue:
         commands:
           - rm -rf /home/semaphore/.docker/config.json
-          - git status # TODO: implement merge commit / pull-request
+          - git status --porcelain # TODO: implement merge commit / pull-request for deltas in generated code, if anything
   - name: Test hambone
     task:
       secrets:
@@ -80,5 +61,6 @@ blocks:
             - rm -rf /home/semaphore/.docker/config.json
         on_pass:
           commands:
+            - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
             - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:latest
             - docker push ${CONTAINERS_HOST}/hambone:latest
