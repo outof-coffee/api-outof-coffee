@@ -54,9 +54,9 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make clean && make all
-          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
-          - docker build -f Dockerfile.hambone -t containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID} .
-          - docker push containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
+          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
+          - docker build -f Dockerfile.hambone -t ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} .
+          - docker push ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
       epilogue:
         commands:
           - git status # TODO: implement merge commit / pull-request
@@ -66,9 +66,9 @@ blocks:
         - name: containers-secret
       prologue:
         commands:
-          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
-          - docker pull containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
-          - docker run -Pd --name=hambone hambone:${SEMAPHORE_PIPELINE_ID}
+          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
+          - docker pull ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
+          - docker run -Pd --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
       jobs:
       - name: can it curl
