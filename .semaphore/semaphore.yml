@@ -56,6 +56,7 @@ blocks:
     task:
       prologue:
         commands:
+          - cd ${SEMAPHORE_GIT_DIR}
           - docker build -f Dockerfile.hambone -t hambone:latest .
           - docker run -Pd --name=hambone hambone
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
