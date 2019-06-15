@@ -59,6 +59,7 @@ blocks:
           - docker push ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
       epilogue:
         commands:
+          - rm -rf /home/semaphore/.docker/config.json
           - git status # TODO: implement merge commit / pull-request
   - name: Test hambone
     task:
@@ -75,3 +76,6 @@ blocks:
       - name: can it curl
         commands:
           - curl http://localhost:${PORT}/v1/hambones
+      epilogue:
+        commands:
+          - rm -rf /home/semaphore/.docker/config.json
