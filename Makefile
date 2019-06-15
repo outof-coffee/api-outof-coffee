@@ -1,4 +1,4 @@
-
+GOPATH ?= $(HOME)/go
 GOOGLEAPIS:=$(shell find $(GOPATH)/pkg/mod/github.com/grpc-ecosystem -type d -name googleapis)
 PROTO_INCLUDES=-I. -I$(GOPATH)/src -I$(GOOGLEAPIS)
 HAMBONE_PATH=--proto_path=api/hambone/proto/v1
