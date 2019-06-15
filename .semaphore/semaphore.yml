@@ -20,12 +20,17 @@ agent:
 # commands to execute.
 # See https://docs.semaphoreci.com/article/62-concepts
 blocks:
-  - name: Build hambone
+  - name: Build Protobuf APIs
     task:
+      secrets:
+        - name: containers-secret
+      env_vars:
+        - name: GO111MODULE
+          value: "on"
+        - name: PROTOBUF_VERSION
+          value: "3.5.1"
       prologue:
         commands:
-          - GO111MODULE=on
-          - PROTOBUF_VERSION=3.5.1
           - PROTOC_FILENAME=protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
           - pushd ~
           - curl -L https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
@@ -48,17 +53,22 @@ blocks:
           - go get -u github.com/golang/protobuf/protoc-gen-go
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
-          - make clean && make hambone
+          - make clean && make all
+          - docker $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
+          - docker build -f Dockerfile.hambone -t containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID} .
+          - docker push containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
       epilogue:
         commands:
-          - git status
+          - git status # TODO: implement merge commit / pull-request
   - name: Test hambone
     task:
+      secrets:
+        - name: containers-secret
       prologue:
         commands:
-          - cd ${SEMAPHORE_GIT_DIR}
-          - docker build -f Dockerfile.hambone -t hambone:latest .
-          - docker run -Pd --name=hambone hambone
+          - docker $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
+          - docker pull containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
+          - docker run -Pd --name=hambone hambone:${SEMAPHORE_PIPELINE_ID}
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
       jobs:
       - name: can it curl
