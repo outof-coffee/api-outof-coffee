@@ -66,7 +66,7 @@ blocks:
         - name: containers-secret
       prologue:
         commands:
-          - docker $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
+          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
           - docker pull containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
           - docker run -Pd --name=hambone hambone:${SEMAPHORE_PIPELINE_ID}
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
