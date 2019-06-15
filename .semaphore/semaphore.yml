@@ -72,7 +72,6 @@ blocks:
       jobs:
         - name: deploy to registry
           commands:
-            - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
             - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:latest
             - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:v1
             - docker push ${CONTAINERS_HOST}/hambone:latest && docker push ${CONTAINERS_HOST}/hambone:v1
