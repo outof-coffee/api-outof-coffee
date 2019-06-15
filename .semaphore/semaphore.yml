@@ -31,7 +31,9 @@ blocks:
           - checkout
           # Set version of Go:
           - sem-version go 1.12
+          - echo ${GOPATH} - ${GOROOT}
           # Download dependencies and build the project:
+          - GO111MODULE=on
           - PROTOBUF_VERSION=3.5.1
           - PROTOC_FILENAME=protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
           - pushd /home/semaphore
@@ -43,6 +45,7 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
           - go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
           - go get -u github.com/golang/protobuf/protoc-gen-go
+          - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make hambone
 
