@@ -50,8 +50,6 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make clean && make all
-      - name: docker build
-        commands:
           - docker build -f Dockerfile.hambone -t hambone:latest
       epilogue:
         commands:
