@@ -65,6 +65,10 @@ blocks:
     task:
       secrets:
         - name: containers-secret
+      prologue:
+        commands:
+          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
+          - docker pull ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
       jobs:
         - name: deploy to registry
           commands:
