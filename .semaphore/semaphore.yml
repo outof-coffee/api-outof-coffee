@@ -49,7 +49,7 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make clean && make hambone
-          - docker build -f Dockerfile.hambone -t hambone:latest
+          - docker build -f Dockerfile.hambone -t hambone:latest .
       epilogue:
         commands:
           - git status
