@@ -21,7 +21,7 @@ agent:
 # commands to execute.
 # See https://docs.semaphoreci.com/article/62-concepts
 blocks:
-  - name: Build project
+  - name: Build hambone
     task:
       prologue:
         commands:
@@ -50,6 +50,19 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make clean && make all
+      - name: docker build
+        commands:
+          - docker build -f Dockerfile.hambone -t hambone:latest
       epilogue:
         commands:
           - git status
+  - name: Test hambone
+    task:
+      prologue:
+        commands:
+          - docker run -pD --name=hambone hambone
+          - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
+      jobs:
+      - name: can it curl
+        commands:
+          - curl http://localhost:${PORT}/v1/hambones
