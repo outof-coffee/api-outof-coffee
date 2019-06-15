@@ -33,6 +33,7 @@ blocks:
           - curl -L https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
           - unzip ${PROTOC_FILENAME}
           - bin/protoc --version
+          - export PATH=${PATH}:/home/semaphore/bin
           - popd
       jobs:
       - name: go get & build
@@ -48,5 +49,5 @@ blocks:
           - go get -u github.com/golang/protobuf/protoc-gen-go
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
-          - make hambone
+          - make clean && make hambone
 
