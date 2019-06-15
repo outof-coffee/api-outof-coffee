@@ -1,0 +1,18 @@
+version: v1.0
+name: Deploy to api.outof.coffee
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Deploy hambone
+    task:
+      secrets:
+        - name: api-outof-coffee
+        - name: containers-secret
+      jobs:
+        - name: Deploy Hambone to Production
+          commands:
+            - echo ${CONTAINERS_PASSWORD} | ssh api@api.outof.coffee docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
+            - ssh api@api.outof.coffee ./update_hambone.sh
+            - rm -rf /home/api/.docker/config.json
