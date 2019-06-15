@@ -59,12 +59,21 @@ blocks:
         always:
           commands:
             - rm -rf /home/semaphore/.docker/config.json
-        on_pass:
+  - name: Deploy to Docker Registry
+    task:
+      secrets:
+        - name: containers-secret
+      jobs:
+        - name: deploy to registry
           commands:
             - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
             - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:latest
             - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:v1
             - docker push ${CONTAINERS_HOST}/hambone:latest && docker push ${CONTAINERS_HOST}/hambone:v1
+      epilogue:
+        always:
+          commands:
+            - rm -rf /home/semaphore/.docker/config.json
 promotions:
   - name: Production deploy
     pipeline_file: production-deploy.yml
