@@ -14,6 +14,6 @@ blocks:
         - name: Deploy Hambone to Production
           commands:
             - ssh-keyscan -H api.outof.coffee >> ~/.ssh/known_hosts
-            - echo ${CONTAINERS_PASSWORD} | ssh api@api.outof.coffee docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
-            - ssh api@api.outof.coffee ./update_hambone.sh
+            - echo ${CONTAINERS_PASSWORD} | ssh -i /home/semaphore/.ssh/id_rsa_semaphore_deploy api@api.outof.coffee docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
+            - ssh -i /home/semaphore/.ssh/id_rsa_semaphore_deploy api@api.outof.coffee ./update_hambone.sh
             - rm -rf /home/api/.docker/config.json
