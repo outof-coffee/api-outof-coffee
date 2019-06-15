@@ -21,3 +21,6 @@ go.sum
 .idea/misc.xml
 .idea/modules.xml
 .idea/workspace.xml
+
+# Project build output
+hambone
