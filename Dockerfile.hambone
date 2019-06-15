@@ -1,0 +1,13 @@
+FROM alpine
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+WORKDIR /hambone
+RUN mkdir -p /hambone/logs /hambone/data
+# Build is handled at CI layer
+COPY hambone /hambone/
+COPY data.json /hambone/
+# Expose protobuf service port at the container layer
+EXPOSE 8070
+# Expose RESTful API service port at the container layer
+EXPOSE 8080
+ENTRYPOINT ["./hambone"]
+CMD []
