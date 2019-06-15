@@ -70,6 +70,7 @@ blocks:
           - docker pull ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
           - docker run -Pd --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
+          - echo $PORT
       jobs:
       - name: can it curl
         commands:
