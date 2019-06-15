@@ -54,7 +54,7 @@ blocks:
           - go get -u github.com/grpc-ecosystem/grpc-gateway
           - go get -u ./...
           - make clean && make all
-          - docker $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
+          - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin containers.outof.coffee
           - docker build -f Dockerfile.hambone -t containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID} .
           - docker push containers.outof.coffee/hambone:${SEMAPHORE_PIPELINE_ID}
       epilogue:
