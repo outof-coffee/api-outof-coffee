@@ -73,7 +73,7 @@ blocks:
       - name: can it curl
         commands:
           - docker run -d -p 8080:8080 --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
-          - curl http://localhost:8080/v1/hambones
+          - curl http://127.0.0.1:8080/v1/hambones
       epilogue:
         always:
           commands:
