@@ -69,11 +69,16 @@ blocks:
         commands:
           - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
           - docker pull ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
-          - docker run -d -p 8080:8080 --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
       jobs:
       - name: can it curl
         commands:
+          - docker run -d -p 8080:8080 --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
           - curl http://localhost:8080/v1/hambones
       epilogue:
-        commands:
-          - rm -rf /home/semaphore/.docker/config.json
+        always:
+          commands:
+            - rm -rf /home/semaphore/.docker/config.json
+        on_pass:
+          commands:
+            - docker tag ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID} ${CONTAINERS_HOST}/hambone:latest
+            - docker push ${CONTAINERS_HOST}/hambone:latest
