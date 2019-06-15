@@ -10,7 +10,7 @@ hamboneproto: api/hambone/v1
 	protoc ${PROTO_INCLUDES} ${HAMBONE_PATH} --go_out=plugins=grpc:api/hambone/v1 hambone.proto
 	protoc ${PROTO_INCLUDES} ${HAMBONE_PATH} --grpc-gateway_out=logtostderr=true:api/hambone/v1 hambone.proto
 	protoc ${PROTO_INCLUDES} ${HAMBONE_PATH} --swagger_out=logtostderr=true:api/hambone/v1 hambone.proto
-hambone:
+hambone: hamboneproto
 	go build -o hambone hambone.go
 api/frowns/v1:
 	mkdir -p api/frowns/v1/
@@ -23,4 +23,4 @@ clean:
 	rm -rf api/frowns/v1
 	rm -rf hambone
 	rm -rf frowns
-all: hambone
+all: hambone frownsproto
