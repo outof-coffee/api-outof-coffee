@@ -70,12 +70,12 @@ blocks:
           - echo $CONTAINERS_PASSWORD | docker login --username "$CONTAINERS_USER" --password-stdin ${CONTAINERS_HOST}
           - docker pull ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
           - docker run -Pd --name=hambone ${CONTAINERS_HOST}/hambone:${SEMAPHORE_PIPELINE_ID}
-          - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
-          - echo $PORT
+          - export CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' hambone)
+          - export PORT=$(docker port hambone 8080 | awk '{split($1,v,":"); print v[2]}')
       jobs:
       - name: can it curl
         commands:
-          - curl http://localhost:${PORT}/v1/hambones
+          - curl http://${CONTAINER_IP}:${PORT}/v1/hambones
       epilogue:
         commands:
           - rm -rf /home/semaphore/.docker/config.json
