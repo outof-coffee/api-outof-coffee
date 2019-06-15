@@ -57,7 +57,7 @@ blocks:
     task:
       prologue:
         commands:
-          - docker run -pD --name=hambone hambone
+          - docker run -Pd --name=hambone hambone
           - export PORT=$(docker port hambone | grep 8080 | awk '{split($3,v,":"); print v[2]}')
       jobs:
       - name: can it curl
