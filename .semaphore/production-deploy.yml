@@ -10,6 +10,9 @@ blocks:
       secrets:
         - name: api-outof-coffee
         - name: containers-secret
+      prologue:
+        commands:
+          - chmod 0400 /home/semaphore/.ssh/id_rsa_semaphore_deploy
       jobs:
         - name: Deploy Hambone to Production
           commands:
