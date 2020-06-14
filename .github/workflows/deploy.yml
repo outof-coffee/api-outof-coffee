@@ -1,0 +1,146 @@
+name: Deploy to api.outof.coffee
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.13
+        id: go
+
+      - name: Install Protobufs
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          PROTOC_FILENAME=protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
+          pushd ~
+          curl -L https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
+          unzip ${PROTOC_FILENAME}
+          bin/protoc --version
+          popd
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: GitHub Action for DigitalOcean - doctl
+        uses: digitalocean/action-doctl@v2.0.0
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Get dependencies
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          go get -v -t -d ./...
+          if [ -f Gopkg.toml ]; then
+              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+              dep ensure
+          fi
+
+      - name: Test
+        run: go test -v .
+
+      - name: Build
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          export PROTOC=~/bin/protoc
+          export PATH=${PATH}:~/bin
+          go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+          go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+          go get -u github.com/golang/protobuf/protoc-gen-go
+          go get -u github.com/grpc-ecosystem/grpc-gateway
+          go get -u ./...
+          make clean && make all
+
+      - name: Deploy container
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          doctl registry login
+          docker build -f Dockerfile.hambone -t ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} .
+          docker push ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }}
+
+      - name: Kubectl install
+        uses: Azure/setup-kubectl@v1
+
+      - name: Generate Deployment
+        run: |
+          docker tag ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+          docker push ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+          cat << EOF > deploy.yaml
+            apiVersion: extensions/v1beta1
+            kind: Ingress
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}-ingress
+              annotations:
+                nginx.ingress.kubernetes.io/enable-cors: "true"
+                nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+                nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+                nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+                cert-manager.io/cluster-issuer: "letsencrypt-prod"
+            spec:
+              rules:
+              - host: api.outof.coffee
+                http:
+                  paths:
+                  - backend:
+                      serviceName: ${{ secrets.DEPLOYMENT_SLUG }}
+                      servicePort: 80
+              tls:
+              - secretName: ${{ secrets.DEPLOYMENT_SLUG }}-cert
+                hosts:
+                  - api.outof.coffee
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}
+            spec:
+              ports:
+              - port: 80
+                targetPort: 8080
+              selector:
+                app: ${{ secrets.DEPLOYMENT_SLUG }}
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}
+            spec:
+              selector:
+                matchLabels:
+                  app: ${{ secrets.DEPLOYMENT_SLUG }}
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    app: ${{ secrets.DEPLOYMENT_SLUG }}
+                spec:
+                  containers:
+                  - name: ${{ secrets.DEPLOYMENT_SLUG }}
+                    image: ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+                    imagePullPolicy: Always
+                    ports:
+                    - containerPort: 8080
+          EOF
+          kubectl apply --validate=true --dry-run=true --filename=deploy.yaml
+
+      - name: Execute Deployment
+        run: |
+          echo k8s deploy
+          doctl kubernetes cluster kubeconfig save ${{ secrets.DEPLOYMENT_CLUSTER }}
+          kubectl apply --validate=true --filename=deploy.yaml
