@@ -1,4 +1,4 @@
-name: Deploy to api.outof.coffee
+name: Deploy
 
 on:
   push:
