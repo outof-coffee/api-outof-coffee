@@ -1,4 +1,4 @@
-# api-outof-coffee [![Build Status](https://travis-ci.org/outof-coffee/api-outof-coffee.svg?branch=master)](https://travis-ci.org/outof-coffee/api-outof-coffee)
+# api-outof-coffee ![Deploy](https://github.com/outof-coffee/api-outof-coffee/workflows/Deploy/badge.svg?branch=master)
 public APIs for outof.coffee
 
 ### Development
