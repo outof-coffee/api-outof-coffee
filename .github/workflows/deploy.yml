@@ -1,0 +1,76 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.13
+        id: go
+
+      - name: Install Protobufs
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          PROTOC_FILENAME=protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
+          pushd ~
+          curl -L https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_FILENAME} -o ${PROTOC_FILENAME}
+          unzip ${PROTOC_FILENAME}
+          bin/protoc --version
+          popd
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: GitHub Action for DigitalOcean - doctl
+        uses: digitalocean/action-doctl@v2.0.0
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Get dependencies
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          go get -v -t -d ./...
+          if [ -f Gopkg.toml ]; then
+              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+              dep ensure
+          fi
+
+      - name: Test
+        run: go test -v .
+
+      - name: Build Container
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
+        run: |
+          export PROTOC=~/bin/protoc
+          export PATH=${PATH}:~/bin
+          go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+          go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+          go get -u github.com/golang/protobuf/protoc-gen-go
+          go get -u github.com/grpc-ecosystem/grpc-gateway
+          go get -u ./...
+          # cache store godeps-$SEMAPHORE_GIT_BRANCH-$(checksum go.mod) /home/semaphore/go/pkg/mod
+          make clean && make all
+          doctl registry login
+          docker build -f Dockerfile.hambone -t $CONTAINERS_HOST/hambone:${{ github.sha }} .
+          docker push $CONTAINERS_HOST/hambone:${{ github.sha }}
+
+      - name: Deploy
+        run: |
+          docker tag $CONTAINERS_HOST/hambone:${{ github.sha }} $CONTAINERS_HOST/hambone:latest
+          docker push $CONTAINERS_HOST/hambone:latest
+          echo k8s deploy
