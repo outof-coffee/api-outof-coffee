@@ -2,7 +2,7 @@ export PROTOC ?= $(shell which protoc)
 export GOPATH ?= $(HOME)/go
 export PATH := $(GOPATH)/bin:$(PATH)
 export GOOS ?= linux
-GOOGLEAPIS:=$(shell find $(GOPATH)/pkg/mod/github.com/grpc-ecosystem -type d -name googleapis)
+GOOGLEAPIS:=$(foreach file,$(shell find $(GOPATH)/pkg/mod/github.com/grpc-ecosystem -type d -name googleapis),-I$(file))
 PROTO_INCLUDES=-I. -I$(GOOGLEAPIS)
 HAMBONE_PATH=--proto_path=api/hambone/proto/v1
 FROWNS_PATH=--proto_path=api/frowns/proto/v1
