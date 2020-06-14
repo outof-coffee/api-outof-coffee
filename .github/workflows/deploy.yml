@@ -51,7 +51,7 @@ jobs:
       - name: Test
         run: go test -v .
 
-      - name: Build Container
+      - name: Build
         env:
           GO111MODULE: "on"
           PROTOBUF_VERSION: "3.5.1"
@@ -63,14 +63,77 @@ jobs:
           go get -u github.com/golang/protobuf/protoc-gen-go
           go get -u github.com/grpc-ecosystem/grpc-gateway
           go get -u ./...
-          # cache store godeps-$SEMAPHORE_GIT_BRANCH-$(checksum go.mod) /home/semaphore/go/pkg/mod
           make clean && make all
-          doctl registry login
-          docker build -f Dockerfile.hambone -t $CONTAINERS_HOST/hambone:${{ github.sha }} .
-          docker push $CONTAINERS_HOST/hambone:${{ github.sha }}
-
-      - name: Deploy
+      - name: Deploy container
+        env:
+          GO111MODULE: "on"
+          PROTOBUF_VERSION: "3.5.1"
         run: |
-          docker tag $CONTAINERS_HOST/hambone:${{ github.sha }} $CONTAINERS_HOST/hambone:latest
-          docker push $CONTAINERS_HOST/hambone:latest
+          doctl registry login
+          docker build -f Dockerfile.hambone -t ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} .
+          docker push ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }}
+      - name: Kubectl install
+        uses: Azure/setup-kubectl@v1
+      - name: Generate Deployment
+        run: |
+          docker tag ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+          docker push ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+          cat << EOF > deploy.yaml
+            apiVersion: extensions/v1beta1
+            kind: Ingress
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}-ingress
+              annotations:
+                nginx.ingress.kubernetes.io/enable-cors: "true"
+                nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+                nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+                nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+                cert-manager.io/cluster-issuer: "letsencrypt-prod"
+            spec:
+              rules:
+              - host: api.outof.coffee
+                http:
+                  paths:
+                  - backend:
+                      serviceName: ${{ secrets.DEPLOYMENT_SLUG }}
+                      servicePort: 80
+              tls:
+              - secretName: ${{ secrets.DEPLOYMENT_SLUG }}-cert
+                hosts:
+                  - api.outof.coffee
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}
+            spec:
+              ports:
+              - port: 80
+                targetPort: 8080
+              selector:
+                app: ${{ secrets.DEPLOYMENT_SLUG }}
+            ---
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: ${{ secrets.DEPLOYMENT_SLUG }}
+            spec:
+              selector:
+                matchLabels:
+                  app: ${{ secrets.DEPLOYMENT_SLUG }}
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    app: ${{ secrets.DEPLOYMENT_SLUG }}
+                spec:
+                  containers:
+                  - name: ${{ secrets.DEPLOYMENT_SLUG }}
+                    image: ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
+                    imagePullPolicy: Always
+                    ports:
+                    - containerPort: 8080
+          EOF
           echo k8s deploy
+          doctl kubernetes cluster kubeconfig save ${{ secrets.DEPLOYMENT_CLUSTER }}
+          ls -al deploy.yml
