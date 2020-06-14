@@ -64,6 +64,7 @@ jobs:
           go get -u github.com/grpc-ecosystem/grpc-gateway
           go get -u ./...
           make clean && make all
+
       - name: Deploy container
         env:
           GO111MODULE: "on"
@@ -72,8 +73,10 @@ jobs:
           doctl registry login
           docker build -f Dockerfile.hambone -t ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} .
           docker push ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }}
+
       - name: Kubectl install
         uses: Azure/setup-kubectl@v1
+
       - name: Generate Deployment
         run: |
           docker tag ${{ secrets.CONTAINER_REGISTRY }}/hambone:${{ github.sha }} ${{ secrets.CONTAINER_REGISTRY }}/hambone:production
@@ -134,6 +137,10 @@ jobs:
                     ports:
                     - containerPort: 8080
           EOF
+          kubectl apply --validate=true --dry-run=true --filename=deploy.yaml
+
+      - name: Execute Deployment
+        run: |
           echo k8s deploy
           doctl kubernetes cluster kubeconfig save ${{ secrets.DEPLOYMENT_CLUSTER }}
-          ls -al deploy.yml
+          kubectl apply --validate=true --filename=deploy.yaml
