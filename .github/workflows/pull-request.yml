@@ -63,5 +63,4 @@ jobs:
           go get -u github.com/golang/protobuf/protoc-gen-go
           go get -u github.com/grpc-ecosystem/grpc-gateway
           go get -u ./...
-          # cache store godeps-$SEMAPHORE_GIT_BRANCH-$(checksum go.mod) /home/semaphore/go/pkg/mod
           make clean && make all
